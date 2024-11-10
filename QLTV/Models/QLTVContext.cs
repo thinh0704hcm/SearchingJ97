@@ -67,6 +67,8 @@ public partial class QLTVContext : DbContext
                 .HasMaxLength(7)
                 .IsUnicode(false)
                 .HasComputedColumnSql("('AD'+right('00000'+CONVERT([varchar](5),[ID]),(5)))", true);
+            entity.Property(e => e.NgayKetThuc).HasColumnType("date");
+            entity.Property(e => e.NgayVaoLam).HasColumnType("date");
 
             entity.HasOne(d => d.IDTaiKhoanNavigation).WithMany(p => p.ADMIN)
                 .HasForeignKey(d => d.IDTaiKhoan)
@@ -279,10 +281,13 @@ public partial class QLTVContext : DbContext
 
         modelBuilder.Entity<TAIKHOAN>(entity =>
         {
-            entity.HasIndex(e => e.Email, "UQ__TAIKHOAN__A9D10534469FFD9F").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__TAIKHOAN__A9D105344F420D87").IsUnique();
 
-            entity.HasIndex(e => e.TenTaiKhoan, "UQ__TAIKHOAN__B106EAF8F1CCA7CD").IsUnique();
+            entity.HasIndex(e => e.TenTaiKhoan, "UQ__TAIKHOAN__B106EAF8B48B3551").IsUnique();
 
+            entity.Property(e => e.Avatar)
+                .HasMaxLength(500)
+                .IsUnicode(false);
             entity.Property(e => e.DiaChi).HasMaxLength(200);
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
@@ -332,9 +337,9 @@ public partial class QLTVContext : DbContext
         modelBuilder.Entity<TUASACH>(entity =>
         {
             entity.Property(e => e.BiaSach)
-                .HasMaxLength(255)
+                .HasMaxLength(500)
                 .IsUnicode(false)
-                .HasDefaultValueSql("('https://m.media-amazon.com/images/I/61HAE8zahLL._AC_UF1000,1000_QL80_.jpg')");
+                .HasDefaultValueSql("('https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/800px-No_image_available.svg.png')");
             entity.Property(e => e.MaTuaSach)
                 .HasMaxLength(7)
                 .IsUnicode(false)

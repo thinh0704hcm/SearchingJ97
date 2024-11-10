@@ -13,13 +13,15 @@ public partial class TAIKHOAN
 
     public string TenTaiKhoan { get; set; } = null!;
 
+    public string Email { get; set; } = null!;
+
     public DateTime SinhNhat { get; set; }
 
     public string DiaChi { get; set; } = null!;
 
-    public string Email { get; set; } = null!;
-
     public string SDT { get; set; } = null!;
+
+    public string Avatar { get; set; } = null!;
 
     public bool TrangThai { get; set; }
 

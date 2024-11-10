@@ -19,5 +19,7 @@ public partial class PHIEUTHUTIENPHAT
 
     public decimal ConLai { get; set; }
 
+    public bool IsDeleted { get; set; }
+
     public virtual DOCGIA IDDocGiaNavigation { get; set; } = null!;
 }

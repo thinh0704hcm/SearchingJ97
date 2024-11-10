@@ -11,5 +11,9 @@ public partial class ADMIN
 
     public int IDTaiKhoan { get; set; }
 
+    public DateTime NgayVaoLam { get; set; }
+
+    public DateTime NgayKetThuc { get; set; }
+
     public virtual TAIKHOAN IDTaiKhoanNavigation { get; set; } = null!;
 }
