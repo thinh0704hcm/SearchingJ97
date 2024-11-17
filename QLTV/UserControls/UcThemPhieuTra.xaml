@@ -1,0 +1,78 @@
+<UserControl x:Class="QLTV.UserControls.UcThemPhieuTra"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:QLTV.UserControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Text="Thêm phiếu trả" FontSize="20" FontWeight="Bold" Margin="0,0,0,10"/>
+
+        <!-- Borrow Ticket Selection -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,10">
+            <TextBlock Text="Phiếu mượn:" Margin="0,0,0,5"/>
+            <ComboBox x:Name="cboPhieuMuon" 
+                      DisplayMemberPath="MaPhieuMuon"
+                      SelectedValuePath="ID"
+                      SelectionChanged="cboPhieuMuon_SelectionChanged"
+                      Width="300" HorizontalAlignment="Left"/>
+            
+            <TextBlock Margin="0,10,0,5">
+                <Run Text="Độc giả: "/>
+                <Run x:Name="txtDocGia" FontWeight="Bold"/>
+            </TextBlock>
+            <TextBlock Margin="0,0,0,5">
+                <Run Text="Ngày mượn: "/>
+                <Run x:Name="txtNgayMuon" FontWeight="Bold"/>
+            </TextBlock>
+        </StackPanel>
+
+        <!-- Books List -->
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Sách trả:" Margin="0,0,0,5"/>
+            <DataGrid Grid.Row="1" x:Name="dgBooks" AutoGenerateColumns="False" Margin="0,0,0,10">
+                <DataGrid.Columns>
+                    <DataGridCheckBoxColumn Header="Chọn" 
+                                          Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}"/>
+                    <DataGridTextColumn Header="Mã sách" 
+                                      Binding="{Binding ReturnDetail.IDSachNavigation.MaSach}" 
+                                      IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Tên sách" 
+                                      Binding="{Binding ReturnDetail.IDSachNavigation.IDTuaSachNavigation.TenTuaSach}" 
+                                      IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Hạn trả" 
+                                      Binding="{Binding ReturnDetail.HanTra, StringFormat=dd/MM/yyyy}"
+                                      IsReadOnly="True"/>
+                    <DataGridTextColumn Header="Tình trạng mượn" 
+                                      Binding="{Binding BorrowStatus}"
+                                      IsReadOnly="True"/>
+                    <DataGridComboBoxColumn Header="Tình trạng trả" 
+                                          x:Name="colTinhTrangTra"
+                                          SelectedItemBinding="{Binding TinhTrangTra}"/>
+                    <DataGridTextColumn Header="Ghi chú" 
+                                      Binding="{Binding GhiChu}"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Lưu" Width="100" Margin="0,0,10,0" Click="btnSave_Click"/>
+            <Button Content="Hủy" Width="100" Click="btnCancel_Click"/>
+        </StackPanel>
+    </Grid>
+</UserControl> 

@@ -1,0 +1,120 @@
+<UserControl x:Class="QLTV.UserControls.UcThemPhieuMuon"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:QLTV.UserControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" Text="Thêm phiếu mượn" FontSize="20" FontWeight="Bold" Margin="0,0,0,10"/>
+
+        <!-- Reader Selection -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,10">
+            <TextBlock Text="Độc giả:" Margin="0,0,0,5"/>
+            <ComboBox x:Name="cboDocGia" 
+                      DisplayMemberPath="IDTaiKhoanNavigation.TenTaiKhoan"
+                      SelectedValuePath="ID"
+                      Width="300" HorizontalAlignment="Left"/>
+        </StackPanel>
+
+        <!-- Search Section -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,10">
+            <TextBlock Text="Tìm kiếm sách:" Margin="0,0,0,5"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBox x:Name="txtSearchBook" 
+                         Style="{StaticResource TextBoxWithPlaceholder}"
+                         Tag="Nhập mã sách hoặc tên sách..."
+                         TextChanged="txtSearchBook_TextChanged"
+                         Margin="0,0,10,0"/>
+                
+                <ComboBox Grid.Column="1" x:Name="cboSearchType" Width="120" 
+                          SelectedIndex="0">
+                    <ComboBoxItem Content="Tất cả"/>
+                    <ComboBoxItem Content="Mã sách"/>
+                    <ComboBoxItem Content="Tên sách"/>
+                    <ComboBoxItem Content="Thể loại"/>
+                </ComboBox>
+            </Grid>
+        </StackPanel>
+
+        <!-- Available Books -->
+        <Grid Grid.Row="3" Margin="0,0,0,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <TextBlock Text="Sách có sẵn:" FontWeight="Bold"/>
+            <DataGrid Grid.Row="1" x:Name="dgAvailableBooks" 
+                      AutoGenerateColumns="False" 
+                      SelectionMode="Extended"
+                      IsReadOnly="True">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Mã sách" Binding="{Binding MaSach}"/>
+                    <DataGridTextColumn Header="Tên sách" Binding="{Binding IDTuaSachNavigation.TenTuaSach}"/>
+                    <DataGridTextColumn Header="Thể loại" Binding="{Binding IDTuaSachNavigation.IDTheLoaiNavigation.TenTheLoai}"/>
+                    <DataGridTemplateColumn>
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Content="Chọn" Click="btnSelectBook_Click"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <!-- Selected Books Header -->
+        <TextBlock Grid.Row="4" Text="Sách đã chọn:" FontWeight="Bold" Margin="0,0,0,5"/>
+
+        <!-- Selected Books -->
+        <DataGrid Grid.Row="5" x:Name="dgSelectedBooks" 
+                  AutoGenerateColumns="False" 
+                  Margin="0,0,0,10">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Mã sách" Binding="{Binding MaSach}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Tên sách" 
+                                  Binding="{Binding IDTuaSachNavigation.TenTuaSach}" 
+                                  IsReadOnly="True"/>
+                <DataGridTextColumn Header="Thể loại" 
+                                  Binding="{Binding IDTuaSachNavigation.IDTheLoaiNavigation.TenTheLoai}" 
+                                  IsReadOnly="True"/>
+                <DataGridTextColumn Header="Số ngày mượn" 
+                                  Binding="{Binding CustomBorrowDays}"/>
+                <DataGridTextColumn Header="Hạn trả" 
+                                  Binding="{Binding CustomReturnDate, StringFormat=dd/MM/yyyy}" 
+                                  IsReadOnly="True"/>
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Xóa" Click="btnRemoveBook_Click"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Buttons -->
+        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Lưu" Width="100" Margin="0,0,10,0" Click="btnSave_Click"/>
+            <Button Content="Hủy" Width="100" Click="btnCancel_Click"/>
+        </StackPanel>
+    </Grid>
+</UserControl> 
