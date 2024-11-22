@@ -13,7 +13,8 @@
                         <Grid>
                             <TextBox Text="{Binding Path=Text, 
                                  RelativeSource={RelativeSource TemplatedParent}, 
-                                 Mode=TwoWay}"
+                                 Mode=TwoWay,
+                                 UpdateSourceTrigger=PropertyChanged}"
                                  Background="Transparent"
                                  Panel.ZIndex="2"/>
                             <TextBlock Text="{TemplateBinding Tag}" 

@@ -20,7 +20,8 @@ namespace QLTV
         public MainWindow()
         {
             InitializeComponent();
-            Content.Content = new UcQLMuonTra();
+            MuonTra.Content = new UcQLMuonTra();
+            ThongKe.Content = new UcBCMuonTra();
         }
     }
 }

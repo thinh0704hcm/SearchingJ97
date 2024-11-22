@@ -5,21 +5,20 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.EntityFrameworkCore;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System.Dynamic;
 
 namespace QLTV.UserControls
 {
     public partial class UcThemPhieuTra : UserControl
     {
         private readonly QLTVContext _context;
-        private ObservableCollection<ReturnBookDetail> _returnDetails;
+        private ObservableCollection<dynamic> _returnDetails;
 
         public UcThemPhieuTra()
         {
             InitializeComponent();
             _context = new QLTVContext();
-            _returnDetails = new ObservableCollection<ReturnBookDetail>();
+            _returnDetails = new ObservableCollection<dynamic>();
             dgBooks.ItemsSource = _returnDetails;
 
             var tinhTrangList = new[] { "Tốt", "Hư hỏng nhẹ", "Hư hỏng nặng", "Mất sách" };
@@ -42,7 +41,7 @@ namespace QLTV.UserControls
                     .Where(p => !p.IsDeleted && p.IsPending)
                     .ToListAsync();
 
-                var availableBorrows = pendingBorrows.Where(p => p.CTPHIEUMUON.Any(ct => 
+                var availableBorrows = pendingBorrows.Where(p => p.CTPHIEUMUON.Any(ct =>
                     !p.CTPHIEUTRA.Any(ptr => ptr.IDSach == ct.IDSach))).ToList();
 
                 cboPhieuMuon.ItemsSource = availableBorrows;
@@ -83,12 +82,18 @@ namespace QLTV.UserControls
                         GhiChu = "",
                         TienPhat = 0
                     };
-                    _returnDetails.Add(new ReturnBookDetail 
-                    { 
-                        ReturnDetail = ctpt, 
-                        IsSelected = true,
-                        BorrowStatus = ctpm.TinhTrangMuon 
-                    });
+
+                    dynamic returnDetail = new ExpandoObject();
+                    returnDetail.IsSelected = true;
+                    returnDetail.ReturnDetail = ctpt;
+                    returnDetail.BorrowStatus = ctpm.TinhTrangMuon;
+                    returnDetail.MaSach = ctpt.IDSachNavigation?.MaSach;
+                    returnDetail.TenSach = ctpt.IDSachNavigation?.IDTuaSachNavigation?.TenTuaSach;
+                    returnDetail.HanTra = ctpm.HanTra;
+                    returnDetail.TinhTrangTra = ctpt.TinhTrangTra;
+                    returnDetail.GhiChu = ctpt.GhiChu;
+
+                    _returnDetails.Add(returnDetail);
                 }
             }
         }
@@ -113,66 +118,82 @@ namespace QLTV.UserControls
             {
                 var phieuTra = new PHIEUTRA
                 {
-                    MaPhieuTra = GenerateNewReturnCode(),
                     NgayTra = DateTime.Now
                 };
 
                 _context.PHIEUTRA.Add(phieuTra);
                 await _context.SaveChangesAsync();
 
-                foreach (var returnBook in selectedBooks)
+                foreach (dynamic returnBook in selectedBooks)
                 {
-                    var ctpt = returnBook.ReturnDetail;
+                    CTPHIEUTRA ctpt = returnBook.ReturnDetail;
                     ctpt.IDPhieuTra = phieuTra.ID;
-                    
-                    var book = ctpt.IDSachNavigation;
-                    var borrowDetail = selectedBorrow.CTPHIEUMUON.First(ct => ct.IDSach == ctpt.IDSach);
-                    
-                    // Update TinhTrangMuon based on TinhTrangTra
-                    switch (ctpt.TinhTrangTra)
-                    {
-                        case "Tốt":
-                            borrowDetail.TinhTrangMuon = "Hoàn trả tốt";
-                            break;
-                        case "Hư hỏng nhẹ":
-                            borrowDetail.TinhTrangMuon = "Hoàn trả hư hỏng nhẹ";
-                            break;
-                        case "Hư hỏng nặng":
-                            borrowDetail.TinhTrangMuon = "Hoàn trả hư hỏng nặng";
-                            break;
-                        case "Mất sách":
-                            borrowDetail.TinhTrangMuon = "Mất sách";
-                            break;
-                        default:
-                            borrowDetail.TinhTrangMuon = "Đã trả";
-                            break;
-                    }
 
-                    // Calculate fines
-                    if (DateTime.Now > borrowDetail.HanTra)
-                    {
-                        int daysLate = (int)(DateTime.Now - borrowDetail.HanTra).TotalDays;
-                        ctpt.TienPhat = daysLate * 5000;
-                        borrowDetail.TinhTrangMuon += " - Trễ hạn";
-                    }
+                    var book = await _context.SACH.FindAsync(ctpt.IDSach);
+                    var borrowDetail = await _context.CTPHIEUMUON
+                        .FirstOrDefaultAsync(ct => ct.IDPhieuMuon == ctpt.IDPhieuMuon && ct.IDSach == ctpt.IDSach);
 
-                    if (ctpt.TinhTrangTra != "Tốt")
+                    if (borrowDetail != null)
                     {
-                        ctpt.TienPhat += book.TriGia * 0.5m;
-                    }
+                        // Update TinhTrangMuon based on TinhTrangTra
+                        switch (returnBook.TinhTrangTra)
+                        {
+                            case "Tốt":
+                                borrowDetail.TinhTrangMuon = "Hoàn trả tốt";
+                                break;
+                            case "Hư hỏng nhẹ":
+                                borrowDetail.TinhTrangMuon = "Hoàn trả hư hỏng nhẹ";
+                                break;
+                            case "Hư hỏng nặng":
+                                borrowDetail.TinhTrangMuon = "Hoàn trả hư hỏng nặng";
+                                break;
+                            case "Mất sách":
+                                borrowDetail.TinhTrangMuon = "Mất sách";
+                                break;
+                            default:
+                                borrowDetail.TinhTrangMuon = "Đã trả";
+                                break;
+                        }
 
-                    _context.CTPHIEUTRA.Add(ctpt);
-                    book.IsAvailable = true;
+                        // Calculate fines
+                        if (DateTime.Now > borrowDetail.HanTra)
+                        {
+                            int daysLate = (int)(DateTime.Now - borrowDetail.HanTra).TotalDays;
+                            ctpt.TienPhat = daysLate * 5000;
+                            borrowDetail.TinhTrangMuon += " - Trễ hạn";
+                        }
+
+                        if (returnBook.TinhTrangTra != "Tốt" && book != null)
+                        {
+                            ctpt.TienPhat += book.TriGia * 0.5m;
+                        }
+
+                        ctpt.TinhTrangTra = returnBook.TinhTrangTra;
+                        ctpt.GhiChu = returnBook.GhiChu;
+
+                        _context.CTPHIEUTRA.Add(ctpt);
+                        if (book != null)
+                        {
+                            book.IsAvailable = true;
+                            _context.SACH.Update(book);
+                        }
+                    }
                 }
 
-                // Update remaining books' status if any
-                var unreturnedBooks = selectedBorrow.CTPHIEUMUON
-                    .Where(ct => !selectedBooks.Any(sb => sb.ReturnDetail.IDSach == ct.IDSach));
+                var selectedBookIds = selectedBooks.Select(sb => ((dynamic)sb).ReturnDetail.IDSach).Cast<int>().ToList();
+
+                // Then use these IDs in the query
+                var unreturnedBooks = await _context.CTPHIEUMUON
+                    .Where(ct => ct.IDPhieuMuon == selectedBorrow.ID &&
+                           !selectedBookIds.Contains(ct.IDSach))
+                    .ToListAsync();
+
                 foreach (var unreturned in unreturnedBooks)
                 {
                     if (unreturned.TinhTrangMuon == "Tốt") // Only update if not already modified
                     {
                         unreturned.TinhTrangMuon = "Đang mượn";
+                        _context.CTPHIEUMUON.Update(unreturned);
                     }
                 }
 
@@ -180,6 +201,7 @@ namespace QLTV.UserControls
                 if (_returnDetails.All(r => r.IsSelected))
                 {
                     selectedBorrow.IsPending = false;
+                    _context.PHIEUMUON.Update(selectedBorrow);
                 }
 
                 await _context.SaveChangesAsync();
@@ -193,100 +215,9 @@ namespace QLTV.UserControls
             }
         }
 
-        private string GenerateNewReturnCode()
-        {
-            var lastCode = _context.PHIEUTRA
-                .OrderByDescending(p => p.MaPhieuTra)
-                .Select(p => p.MaPhieuTra)
-                .FirstOrDefault();
-
-            if (string.IsNullOrEmpty(lastCode))
-            {
-                return "PT0001";
-            }
-
-            int number = int.Parse(lastCode.Substring(2)) + 1;
-            return $"PT{number:D4}";
-        }
-
         private void btnCancel_Click(object sender, RoutedEventArgs e)
         {
             Window.GetWindow(this)?.Close();
         }
     }
-
-    public class ReturnBookDetail : INotifyPropertyChanged
-    {
-        private bool _isSelected;
-        private CTPHIEUTRA _returnDetail;
-        private string _borrowStatus;
-
-        public bool IsSelected
-        {
-            get => _isSelected;
-            set
-            {
-                _isSelected = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public CTPHIEUTRA ReturnDetail
-        {
-            get => _returnDetail;
-            set
-            {
-                _returnDetail = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(MaSach));
-                OnPropertyChanged(nameof(TenSach));
-                OnPropertyChanged(nameof(HanTra));
-            }
-        }
-
-        public string BorrowStatus
-        {
-            get => _borrowStatus;
-            set
-            {
-                _borrowStatus = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string MaSach => ReturnDetail?.IDSachNavigation?.MaSach;
-        public string TenSach => ReturnDetail?.IDSachNavigation?.IDTuaSachNavigation?.TenTuaSach;
-        public DateTime HanTra => ReturnDetail?.IDPhieuMuonNavigation.CTPHIEUMUON.Where(x => x.IDSach == ReturnDetail?.IDSach).FirstOrDefault().HanTra ?? DateTime.MinValue;
-        public string TinhTrangTra
-        {
-            get => ReturnDetail?.TinhTrangTra;
-            set
-            {
-                if (ReturnDetail != null)
-                {
-                    ReturnDetail.TinhTrangTra = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public string GhiChu
-        {
-            get => ReturnDetail?.GhiChu;
-            set
-            {
-                if (ReturnDetail != null)
-                {
-                    ReturnDetail.GhiChu = value;
-                    OnPropertyChanged();
-                }
-            }
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-} 
+}

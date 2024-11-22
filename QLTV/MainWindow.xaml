@@ -7,6 +7,13 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <ContentControl x:Name="Content" />
+        <TabControl>
+            <TabItem Header="Mượn trả">
+                <ContentControl x:Name="MuonTra"/>
+            </TabItem>
+            <TabItem Header="Báo cáo thống kê">
+                <ContentControl x:Name="ThongKe" />
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>
