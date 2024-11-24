@@ -244,14 +244,14 @@ namespace QLTV.UserControls
 
         private void btnSelectBook_Click(object sender, RoutedEventArgs e)
         {
-            var book = ((Button)sender).DataContext as SACH;
+            var book = ((Button)sender).DataContext as BookWithGenres;
             if (book == null) return;
 
             if (!_selectedBooks.Any(b => b.Book.ID == book.ID))
             {
                 var bookWithDate = new BookWithCustomDate 
                 { 
-                    Book = book,
+                    Book = book.Book,
                     CustomBorrowDays = book.IDTuaSachNavigation.HanMuonToiDa
                 };
                 _selectedBooks.Add(bookWithDate);

@@ -1,6 +1,7 @@
 using QLTV.Models;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.EntityFrameworkCore;
 
 namespace QLTV.UserControls
 {
@@ -11,7 +12,17 @@ namespace QLTV.UserControls
         public UcCTPhieuMuon(PHIEUMUON phieuMuon)
         {
             InitializeComponent();
-            PhieuMuon = phieuMuon;
+            
+            // Ensure navigation properties are loaded
+            using (var context = new QLTVContext())
+            {
+                PhieuMuon = context.PHIEUMUON
+                    .Include(pm => pm.CTPHIEUMUON)
+                        .ThenInclude(ct => ct.IDSachNavigation)
+                            .ThenInclude(s => s.IDTuaSachNavigation)
+                    .FirstOrDefault(pm => pm.MaPhieuMuon == phieuMuon.MaPhieuMuon);
+            }
+            
             DataContext = PhieuMuon;
             dgBooks.ItemsSource = PhieuMuon.CTPHIEUMUON;
         }

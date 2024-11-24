@@ -1,6 +1,7 @@
 using QLTV.Models;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.EntityFrameworkCore;
 
 namespace QLTV.UserControls
 {
@@ -11,7 +12,17 @@ namespace QLTV.UserControls
         public UcCTPhieuTra(PHIEUTRA phieuTra)
         {
             InitializeComponent();
-            PhieuTra = phieuTra;
+            
+            // Ensure navigation properties are loaded
+            using (var context = new QLTVContext())
+            {
+                PhieuTra = context.PHIEUTRA
+                    .Include(pt => pt.CTPHIEUTRA)
+                        .ThenInclude(ct => ct.IDSachNavigation)
+                            .ThenInclude(s => s.IDTuaSachNavigation)
+                    .FirstOrDefault(pt => pt.MaPhieuTra == phieuTra.MaPhieuTra);
+            }
+            
             DataContext = PhieuTra;
             dgBooks.ItemsSource = PhieuTra.CTPHIEUTRA;
         }
