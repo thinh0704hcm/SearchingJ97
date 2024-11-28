@@ -308,6 +308,64 @@ namespace QLTV.UserControls
                     bookWithDate.Book.IsAvailable = false;
                 }
 
+                // Update BCMUONSACH
+                var currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+                var bcMuonSach = await _context.BCMUONSACH
+                    .FirstOrDefaultAsync(bc => bc.Thang == currentMonth);
+
+                if (bcMuonSach == null)
+                {
+                    bcMuonSach = new BCMUONSACH
+                    {
+                        Thang = currentMonth,
+                        TongSoLuotMuon = _selectedBooks.Count
+                    };
+                    _context.BCMUONSACH.Add(bcMuonSach);
+                }
+                else
+                {
+                    bcMuonSach.TongSoLuotMuon += _selectedBooks.Count;
+                }
+
+                await _context.SaveChangesAsync();
+
+                // Update CTBCMUONSACH
+                var theLoaiGroups = _selectedBooks
+                    .SelectMany(b => b.Book.IDTuaSachNavigation.IDTheLoai)
+                    .GroupBy(tl => tl.ID)
+                    .Select(g => new { TheLoaiId = g.Key, Count = g.Count() });
+
+                foreach (var group in theLoaiGroups)
+                {
+                    var ctBcMuonSach = await _context.CTBCMUONSACH
+                        .FirstOrDefaultAsync(ct => ct.IDBCMuonSach == bcMuonSach.ID && ct.IDTheLoai == group.TheLoaiId);
+
+                    if (ctBcMuonSach == null)
+                    {
+                        ctBcMuonSach = new CTBCMUONSACH
+                        {
+                            IDBCMuonSach = bcMuonSach.ID,
+                            IDTheLoai = group.TheLoaiId,
+                            SoLuotMuon = group.Count
+                        };
+                        _context.CTBCMUONSACH.Add(ctBcMuonSach);
+                    }
+                    else
+                    {
+                        ctBcMuonSach.SoLuotMuon += group.Count;
+                    }
+                }
+
+                // Update TiLe for all CTBCMUONSACH entries of this report
+                var allCtBcMuonSach = await _context.CTBCMUONSACH
+                    .Where(ct => ct.IDBCMuonSach == bcMuonSach.ID)
+                    .ToListAsync();
+
+                foreach (var ct in allCtBcMuonSach)
+                {
+                    ct.TiLe = (float)ct.SoLuotMuon / bcMuonSach.TongSoLuotMuon;
+                }
+
                 await _context.SaveChangesAsync();
                 MessageBox.Show("Thêm phiếu mượn thành công!", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
                 Window.GetWindow(this).DialogResult = true;

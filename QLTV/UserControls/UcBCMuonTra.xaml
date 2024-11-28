@@ -20,15 +20,7 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Search and Add Section -->
-                    <!--<StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10" Grid.ColumnSpan="2">
-                        <Label Content="Tháng" />
-                        <ComboBox x:Name="cbMonth" Width="80" ItemsSource="{Binding AvailableMonths}" DisplayMemberPath="Source"/>
-                        <Label Content="Năm" />
-                        <ComboBox x:Name="cbYear" Width="80" ItemsSource="{Binding AvailableMonths}" DisplayMemberPath="Source"/>
-                    </StackPanel>-->
-
-                    <!-- Borrowing DataGrid -->
+                    <!-- Borrowing Reports DataGrid -->
                     <DataGrid x:Name="dgBorrowingReports" Grid.Row="1" AutoGenerateColumns="False" 
                           IsReadOnly="True" SelectionMode="Single" Grid.ColumnSpan="2">
                         <DataGrid.Columns>
@@ -48,34 +40,28 @@
                 </Grid>
             </TabItem>
 
-            <!-- Returning Tab -->
-            <!--<TabItem Header="Trả sách">
+            <TabItem Header="Báo cáo trả trễ">
                 <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="101*"/>
+                        <ColumnDefinition Width="426*"/>
+                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    --><!-- Search and Add Section --><!--
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
-                        <TextBox x:Name="txtSearchReturn" Width="200" Margin="0,0,10,0" 
-                             Style="{StaticResource TextBoxWithPlaceholder}"
-                             Tag="Tìm kiếm phiếu trả..."/>
-                        <Button x:Name="btnAddReturn" Content="Thêm phiếu trả" Click="btnAddReturn_Click"/>
-                    </StackPanel>
-
-                    --><!-- Returning DataGrid -->
-                    <!--<DataGrid x:Name="dgReturns" Grid.Row="1" AutoGenerateColumns="False" 
-                          IsReadOnly="True" SelectionMode="Single">
+                    <!-- Borrowing Reports DataGrid -->
+                    <DataGrid x:Name="dgLateReturnReports" Grid.Row="1" AutoGenerateColumns="False" 
+              IsReadOnly="True" SelectionMode="Single" Grid.ColumnSpan="2">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Mã phiếu" Binding="{Binding MaPhieuTra}"/>
-                            <DataGridTextColumn Header="Ngày trả" Binding="{Binding NgayTra, StringFormat=dd/MM/yyyy}"/>
+                            <DataGridTextColumn Header="Mã báo cáo" Binding="{Binding MaBCTraTre}"/>
+                            <DataGridTextColumn Header="Tháng" Binding="{Binding Ngay, StringFormat=dd/MM/yyyy}"/>
                             <DataGridTemplateColumn Header="Thao tác">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
-                                            <Button Content="Chi tiết" Click="btnViewReturnDetail_Click" Margin="0,0,5,0"/>
-                                            <Button Content="Xóa" Click="btnDeleteReturn_Click"/>
+                                            <Button Content="Chi tiết" Click="btnViewLateReturnReportDetail_Click" Margin="0,0,5,0"/>
                                         </StackPanel>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
@@ -83,7 +69,7 @@
                         </DataGrid.Columns>
                     </DataGrid>
                 </Grid>
-            </TabItem>-->
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>

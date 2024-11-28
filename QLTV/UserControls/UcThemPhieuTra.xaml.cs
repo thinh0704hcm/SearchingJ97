@@ -124,6 +124,42 @@ namespace QLTV.UserControls
                 _context.PHIEUTRA.Add(phieuTra);
                 await _context.SaveChangesAsync();
 
+                // Check for late returns and update BCTRATRE if necessary
+                var lateReturns = selectedBooks
+                    .Where(r => DateTime.Now > ((dynamic)r).HanTra)
+                    .ToList();
+
+                if (lateReturns.Any())
+                {
+                    var today = DateTime.Now.Date;
+                    var bcTraTre = await _context.BCTRATRE
+                        .FirstOrDefaultAsync(bc => bc.Ngay == today);
+
+                    if (bcTraTre == null)
+                    {
+                        bcTraTre = new BCTRATRE
+                        {
+                            Ngay = today
+                        };
+                        _context.BCTRATRE.Add(bcTraTre);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    foreach (dynamic lateReturn in lateReturns)
+                    {
+                        var ctBcTraTre = new CTBCTRATRE
+                        {
+                            IDBCTraTre = bcTraTre.ID,
+                            IDPhieuTra = phieuTra.ID,
+                            SoNgayTraTre = (int)(DateTime.Now - lateReturn.HanTra).TotalDays
+                        };
+
+                        _context.CTBCTRATRE.Add(ctBcTraTre);
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+
                 foreach (dynamic returnBook in selectedBooks)
                 {
                     CTPHIEUTRA ctpt = returnBook.ReturnDetail;

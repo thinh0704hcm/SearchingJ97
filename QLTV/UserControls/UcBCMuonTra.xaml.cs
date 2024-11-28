@@ -25,6 +25,7 @@ namespace QLTV.UserControls
     {
         private readonly QLTVContext _context;
         private ObservableCollection<BCMUONSACH> _borrowReports;
+        private ObservableCollection<BCTRATRE> _lateReturnReports;
 
 
         public UcBCMuonTra()
@@ -38,13 +39,22 @@ namespace QLTV.UserControls
         {
             try
             {
-                // Load borrowings with related data, excluding soft-deleted records
+                // Load borrowing reports with related data, excluding soft-deleted records
                 var borrowReports = await _context.BCMUONSACH
                     .Include(p => p.CTBCMUONSACH)
                         .ThenInclude(ct => ct.IDTheLoaiNavigation)
                     .ToListAsync();
                 _borrowReports = new ObservableCollection<BCMUONSACH>(borrowReports);
                 dgBorrowingReports.ItemsSource = _borrowReports;
+
+                // Load late return reports with related data, excluding soft-deleted records
+                var lateReturnReports = await _context.BCTRATRE
+                    .Include(p => p.CTBCTRATRE)
+                        .ThenInclude(ct => ct.IDPhieuTraNavigation)
+                    .ToListAsync();
+                _lateReturnReports = new ObservableCollection<BCTRATRE>(lateReturnReports);
+                dgLateReturnReports.ItemsSource = _lateReturnReports;
+
             }
             catch (Exception ex)
             {
@@ -61,6 +71,23 @@ namespace QLTV.UserControls
             {
                 Title = $"Chi tiết phiếu mượn: {bcMuonSach.MaBCMuonSach}",
                 Content = new UcCTBCMuonSach(bcMuonSach),
+                Width = 800,
+                Height = 600,
+                WindowStartupLocation = WindowStartupLocation.CenterScreen,
+                ResizeMode = ResizeMode.NoResize
+            };
+            window.ShowDialog();
+        }
+
+        private void btnViewLateReturnReportDetail_Click(object sender, RoutedEventArgs e)
+        {
+            var bcTraTre = ((FrameworkElement)sender).DataContext as BCTRATRE;
+            if (bcTraTre == null) return;
+
+            var window = new Window
+            {
+                Title = $"Chi tiết phiếu mượn: {bcTraTre.MaBCTraTre}",
+                Content = new UcCTBCTraTre(bcTraTre),
                 Width = 800,
                 Height = 600,
                 WindowStartupLocation = WindowStartupLocation.CenterScreen,
