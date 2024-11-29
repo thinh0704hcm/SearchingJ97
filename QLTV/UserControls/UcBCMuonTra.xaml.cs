@@ -74,7 +74,7 @@ namespace QLTV.UserControls
                 Width = 800,
                 Height = 600,
                 WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                ResizeMode = ResizeMode.NoResize
+                ResizeMode = ResizeMode.CanResizeWithGrip
             };
             window.ShowDialog();
         }
@@ -91,7 +91,7 @@ namespace QLTV.UserControls
                 Width = 800,
                 Height = 600,
                 WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                ResizeMode = ResizeMode.NoResize
+                ResizeMode = ResizeMode.CanResizeWithGrip
             };
             window.ShowDialog();
         }

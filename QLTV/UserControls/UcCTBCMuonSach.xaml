@@ -12,6 +12,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- Header Information -->
@@ -33,11 +34,14 @@
                 <DataGridTextColumn Header="Mã thể loại" Width="*" Binding="{Binding IDTheLoaiNavigation.MaTheLoai}"/>
                 <DataGridTextColumn Header="Tên thể loại" Width="4*" Binding="{Binding IDTheLoaiNavigation.TenTheLoai}"/>
                 <DataGridTextColumn Header="Số lượt mượn" Width="*" Binding="{Binding SoLuotMuon}"/>
-                <DataGridTextColumn Header="Tỉ lệ" Width="*" Binding="{Binding TiLe}"/>
+                <DataGridTextColumn Header="Tỉ lệ" Width="*" Binding="{Binding TiLe, StringFormat=P2}"/>
             </DataGrid.Columns>
         </DataGrid>
-
+        <TextBlock Grid.Row="3" HorizontalAlignment="Right">
+            <Run Text="Tổng số lượt mượn : "/>
+            <Run Text="{Binding TongSoLuotMuon}"/>
+        </TextBlock>
         <!-- Close Button -->
-        <Button Grid.Row="3" Content="Đóng" Width="100" HorizontalAlignment="Right" Click="btnClose_Click"/>
+        <Button Grid.Row="4" Content="Đóng" Width="100" HorizontalAlignment="Right" Click="btnClose_Click"/>
     </Grid>
 </UserControl>

@@ -31,12 +31,12 @@
         <TextBlock Grid.Row="1" Text="Danh sách sách trả:" FontWeight="Bold" Margin="0,0,0,5"/>
         <DataGrid Grid.Row="2" x:Name="dgBooks" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,10">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Mã sách" Binding="{Binding IDSachNavigation.MaSach}"/>
-                <DataGridTextColumn Header="Tên sách" Binding="{Binding IDSachNavigation.IDTuaSachNavigation.TenTuaSach}"/>
-                <DataGridTextColumn Header="Số ngày mượn" Binding="{Binding SoNgayMuon}"/>
-                <DataGridTextColumn Header="Tiền phạt" Binding="{Binding TienPhat, StringFormat=N0}"/>
-                <DataGridTextColumn Header="Tình trạng" Binding="{Binding TinhTrangTra}"/>
-                <DataGridTextColumn Header="Ghi chú" Binding="{Binding GhiChu}"/>
+                <DataGridTextColumn Header="Mã sách" Binding="{Binding IDSachNavigation.MaSach}" Width="2*"/>
+                <DataGridTextColumn Header="Tên sách" Binding="{Binding IDSachNavigation.IDTuaSachNavigation.TenTuaSach}" Width="5*"/>
+                <DataGridTextColumn Header="Số ngày mượn" Binding="{Binding SoNgayMuon}" Width="*"/>
+                <DataGridTextColumn Header="Tiền phạt" Binding="{Binding TienPhat, StringFormat=N0}" Width="*"/>
+                <DataGridTextColumn Header="Tình trạng" Binding="{Binding TinhTrangTra}" Width="2*"/>
+                <DataGridTextColumn Header="Ghi chú" Binding="{Binding GhiChu}" Width=" 4*"/>
             </DataGrid.Columns>
         </DataGrid>
 

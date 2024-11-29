@@ -8,6 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
 using System.Windows.Input;
 using System.Text.RegularExpressions;
+using System.Windows.Data;
+using System.Globalization;
+using System.Text;
 
 namespace QLTV.UserControls
 {
@@ -15,25 +18,42 @@ namespace QLTV.UserControls
     {
         private readonly QLTVContext _context;
         private ObservableCollection<SACH> _allBooks;
+        private ObservableCollection<BookDisplayItem> dsSach;
         private ObservableCollection<BookWithCustomDate> _selectedBooks;
+        private CollectionViewSource viewSource;
 
         private class BookWithCustomDate : INotifyPropertyChanged
         {
-            private SACH _book;
+            private BookDisplayItem _bookItem;
             private int _customBorrowDays;
             private DateTime _customReturnDate;
 
             public SACH Book
             {
-                get => _book;
+                get => _bookItem.Book;
                 set
                 {
-                    _book = value;
+                    _bookItem.Book = value;
                     OnPropertyChanged(nameof(Book));
                     OnPropertyChanged(nameof(MaSach));
                     OnPropertyChanged(nameof(IDTuaSachNavigation));
-                    OnPropertyChanged(nameof(DSTheLoai));
                 }
+            }
+
+            public BookDisplayItem BookItem
+            {
+                get => _bookItem;
+                set
+                {
+                    _bookItem = value;
+                    OnPropertyChanged(nameof(_bookItem));
+                    OnPropertyChanged(nameof(BookDisplayItem.DSTheLoai));
+                }
+            }
+
+            public string DSTheLoai
+            {
+                get => _bookItem.DSTheLoai;
             }
 
             public int CustomBorrowDays
@@ -59,8 +79,6 @@ namespace QLTV.UserControls
 
             public string MaSach => Book.MaSach;
             public TUASACH IDTuaSachNavigation => Book.IDTuaSachNavigation;
-
-            public string DSTheLoai { get; set; }
 
             public int ID => Book.ID;
 
@@ -98,10 +116,22 @@ namespace QLTV.UserControls
         public UcThemPhieuMuon()
         {
             InitializeComponent();
-            _context = new QLTVContext();
-            _selectedBooks = new ObservableCollection<BookWithCustomDate>();
+            _context = new ();
+            _selectedBooks = new ();
             dgSelectedBooks.ItemsSource = _selectedBooks;
             LoadData();
+        }
+
+        private string ConvertToUnsigned(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return text;
+
+            return new string(
+                text.Normalize(NormalizationForm.FormD)
+                    .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                    .ToArray()
+            ).Normalize(NormalizationForm.FormC);
         }
 
         private async void LoadData()
@@ -118,21 +148,44 @@ namespace QLTV.UserControls
                     .Where(s => !s.IsDeleted && s.IsAvailable == true)
                     .ToListAsync());
 
-                var dsSach = _allBooks.Select(s => new BookDisplayItem
+                dsSach = new ObservableCollection<BookDisplayItem>( _allBooks.Select(s => new BookDisplayItem
                 {
                     Book = s,
                     MaSach = s.MaSach,
                     TuaSach = s.IDTuaSachNavigation.TenTuaSach,
                     DSTheLoai = string.Join(", ", s.IDTuaSachNavigation.TUASACH_THELOAI
                         .Select(ts_tl => ts_tl.IDTheLoaiNavigation.TenTheLoai))
-                }).ToList();
+                }).ToList());
 
                 var docGia = await _context.DOCGIA
                     .Include(d => d.IDTaiKhoanNavigation)
                     .ToListAsync();
                 
-                cboDocGia.ItemsSource = docGia;
                 dgAvailableBooks.ItemsSource = dsSach;
+
+                viewSource = new CollectionViewSource();
+                viewSource.Source = docGia;
+                cboDocGia.ItemsSource = viewSource.View;
+
+                cboDocGia.Loaded += (s, e) =>
+                {
+                    var textBox = cboDocGia.Template.FindName("PART_EditableTextBox", cboDocGia) as TextBox;
+                    if (textBox != null)
+                    {
+                        textBox.TextChanged += (sender, args) =>
+                        {
+                            var searchText = ConvertToUnsigned(textBox.Text);
+                            viewSource.View.Filter = item =>
+                            {
+                                if (string.IsNullOrEmpty(searchText))
+                                    return true;
+                                var itemText = ConvertToUnsigned(item.ToString());
+                                return itemText.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                            };
+                            cboDocGia.IsDropDownOpen = true;
+                        };
+                    }
+                };
             }
             catch (Exception ex)
             {
@@ -213,11 +266,10 @@ namespace QLTV.UserControls
             {
                 var bookWithDate = new BookWithCustomDate 
                 { 
-                    Book = book.Book,
-                    DSTheLoai = string.Join(", ", book.Book.IDTuaSachNavigation.TUASACH_THELOAI
-                    .Select(ts_tl => ts_tl.IDTheLoaiNavigation.TenTheLoai)),
+                    BookItem = book,
                     CustomBorrowDays = book.Book.IDTuaSachNavigation.HanMuonToiDa
                 };
+                dsSach.Remove(book);
                 _selectedBooks.Add(bookWithDate);
             }
         }
@@ -228,6 +280,7 @@ namespace QLTV.UserControls
             if (bookWithDate != null)
             {
                 _selectedBooks.Remove(bookWithDate);
+                dsSach.Add(bookWithDate.BookItem);
             }
         }
 

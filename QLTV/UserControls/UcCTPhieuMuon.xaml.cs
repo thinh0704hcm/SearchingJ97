@@ -20,6 +20,8 @@ namespace QLTV.UserControls
                     .Include(pm => pm.CTPHIEUMUON)
                         .ThenInclude(ct => ct.IDSachNavigation)
                             .ThenInclude(s => s.IDTuaSachNavigation)
+                    .Include(pm => pm.IDDocGiaNavigation)
+                        .ThenInclude(dg => dg.IDTaiKhoanNavigation)
                     .FirstOrDefault(pm => pm.MaPhieuMuon == phieuMuon.MaPhieuMuon);
             }
             

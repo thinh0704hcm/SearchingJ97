@@ -35,10 +35,10 @@
         <TextBlock Grid.Row="1" Text="Danh sách sách mượn:" FontWeight="Bold" Margin="0,0,0,5"/>
         <DataGrid Grid.Row="2" x:Name="dgBooks" AutoGenerateColumns="False" IsReadOnly="True" Margin="0,0,0,10">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Mã sách" Binding="{Binding IDSachNavigation.MaSach}"/>
-                <DataGridTextColumn Header="Tên sách" Binding="{Binding IDSachNavigation.IDTuaSachNavigation.TenTuaSach}"/>
-                <DataGridTextColumn Header="Hạn trả" Binding="{Binding HanTra, StringFormat=dd/MM/yyyy}"/>
-                <DataGridTextColumn Header="Tình trạng" Binding="{Binding TinhTrangMuon}"/>
+                <DataGridTextColumn Header="Mã sách" Binding="{Binding IDSachNavigation.MaSach}" Width="*"/>
+                <DataGridTextColumn Header="Tên sách" Binding="{Binding IDSachNavigation.IDTuaSachNavigation.TenTuaSach}" Width="5*"/>
+                <DataGridTextColumn Header="Hạn trả" Binding="{Binding HanTra, StringFormat=dd/MM/yyyy}" Width="2*"/>
+                <DataGridTextColumn Header="Tình trạng" Binding="{Binding TinhTrangMuon}" Width="2*"/>
             </DataGrid.Columns>
         </DataGrid>
 
