@@ -14,65 +14,8 @@ namespace QLTV.UserControls
     public partial class UcThemPhieuMuon : UserControl
     {
         private readonly QLTVContext _context;
-        private ObservableCollection<BookWithGenres> _allBooks;
+        private ObservableCollection<SACH> _allBooks;
         private ObservableCollection<BookWithCustomDate> _selectedBooks;
-
-        private class BookWithGenres : INotifyPropertyChanged
-        {
-            private SACH _book;
-
-            public SACH Book
-            {
-                get => _book;
-                set
-                {
-                    _book = value;
-                    OnPropertyChanged(nameof(Book));
-                    OnPropertyChanged(nameof(MaSach));
-                    OnPropertyChanged(nameof(IDTuaSachNavigation));
-                    OnPropertyChanged(nameof(TheLoai));
-                }
-            }
-
-            public string MaSach => Book.MaSach;
-            public TUASACH IDTuaSachNavigation => Book.IDTuaSachNavigation;
-
-            public string TheLoai
-            {
-                get
-                {
-                    string foo = "";
-                    foreach (var item in IDTuaSachNavigation.IDTheLoai)
-                    {
-                        if (foo == "")
-                        {
-                            foo = item.TenTheLoai;
-                            continue;
-                        }
-                        foo += ", " + item.TenTheLoai;
-                    }
-                    return foo;
-                }
-            }
-
-            public int ID => Book.ID;
-
-            public event PropertyChangedEventHandler PropertyChanged;
-            protected virtual void OnPropertyChanged(string propertyName)
-            {
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-            }
-
-            public static ObservableCollection<BookWithGenres> FromBookList (List<SACH> source)
-            {
-                return new ObservableCollection<BookWithGenres> (source.Select(book => new BookWithGenres
-                {
-                    Book = book
-                }).ToList()
-                );
-            }
-
-        }
 
         private class BookWithCustomDate : INotifyPropertyChanged
         {
@@ -89,7 +32,7 @@ namespace QLTV.UserControls
                     OnPropertyChanged(nameof(Book));
                     OnPropertyChanged(nameof(MaSach));
                     OnPropertyChanged(nameof(IDTuaSachNavigation));
-                    OnPropertyChanged(nameof(TheLoai));
+                    OnPropertyChanged(nameof(DSTheLoai));
                 }
             }
 
@@ -117,23 +60,7 @@ namespace QLTV.UserControls
             public string MaSach => Book.MaSach;
             public TUASACH IDTuaSachNavigation => Book.IDTuaSachNavigation;
 
-            public string TheLoai
-            {
-                get
-                {
-                    string foo = "";
-                    foreach (var item in IDTuaSachNavigation.IDTheLoai)
-                    {
-                        if (foo == "")
-                        {
-                            foo = item.TenTheLoai;
-                            continue;
-                        }
-                        foo += ", " + item.TenTheLoai;
-                    }
-                    return foo;
-                }
-            }
+            public string DSTheLoai { get; set; }
 
             public int ID => Book.ID;
 
@@ -148,16 +75,24 @@ namespace QLTV.UserControls
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
             }
 
-            public static ObservableCollection<BookWithCustomDate> FromBookWithGenresList(List<BookWithGenres> books)
+            public static ObservableCollection<BookWithCustomDate> FromBookWithGenresList(List<SACH> books)
             {
                 return new ObservableCollection<BookWithCustomDate>(
                     books.Select(book => new BookWithCustomDate
                     {
-                        Book = book.Book,
+                        Book = book,
                         CustomBorrowDays = book.IDTuaSachNavigation.HanMuonToiDa
                     })
                 );
             }
+        }
+
+        private class BookDisplayItem
+        {
+            public SACH Book { get; set; }
+            public string MaSach { get; set; }
+            public string TuaSach { get; set; }
+            public string DSTheLoai { get; set; }
         }
 
         public UcThemPhieuMuon()
@@ -173,22 +108,31 @@ namespace QLTV.UserControls
         {
             try
             {
+                _allBooks = new ObservableCollection<SACH>(await _context.SACH
+                    .Include(s => s.IDTuaSachNavigation)
+                        .ThenInclude(ts => ts.TUASACH_THELOAI)
+                            .ThenInclude(ts_tl => ts_tl.IDTheLoaiNavigation)
+                    .Include(s => s.IDTuaSachNavigation)
+                        .ThenInclude(ts => ts.TUASACH_TACGIA)
+                            .ThenInclude(ts_tg => ts_tg.IDTacGiaNavigation)
+                    .Where(s => !s.IsDeleted && s.IsAvailable == true)
+                    .ToListAsync());
+
+                var dsSach = _allBooks.Select(s => new BookDisplayItem
+                {
+                    Book = s,
+                    MaSach = s.MaSach,
+                    TuaSach = s.IDTuaSachNavigation.TenTuaSach,
+                    DSTheLoai = string.Join(", ", s.IDTuaSachNavigation.TUASACH_THELOAI
+                        .Select(ts_tl => ts_tl.IDTheLoaiNavigation.TenTheLoai))
+                }).ToList();
+
                 var docGia = await _context.DOCGIA
                     .Include(d => d.IDTaiKhoanNavigation)
                     .ToListAsync();
+                
                 cboDocGia.ItemsSource = docGia;
-
-                // Load all available books
-                _allBooks = BookWithGenres.FromBookList( await _context.SACH
-                    .Include(s => s.IDTuaSachNavigation)
-                        .ThenInclude(ts => ts.IDTheLoai)
-                    .Include(s => s.IDTuaSachNavigation)
-                        .ThenInclude(ts => ts.IDTacGia)
-                    .Where(s => !s.IsDeleted && s.IsAvailable)
-                    .ToListAsync());
-                    
-                // Initially show all books
-                dgAvailableBooks.ItemsSource = _allBooks;
+                dgAvailableBooks.ItemsSource = dsSach;
             }
             catch (Exception ex)
             {
@@ -203,56 +147,76 @@ namespace QLTV.UserControls
             var searchText = txtSearchBook.Text.Trim().ToLower();
             var searchType = ((ComboBoxItem)cboSearchType.SelectedItem).Content.ToString();
 
-            IEnumerable<BookWithGenres> filteredBooks = _allBooks.ToList();
+            IEnumerable<SACH> filteredBooks = _allBooks;
 
             if (!string.IsNullOrEmpty(searchText))
             {
                 switch (searchType)
                 {
                     case "Mã sách":
-                        filteredBooks = _allBooks.Where(s => 
+                        filteredBooks = filteredBooks.Where(s => 
                             s.MaSach.ToLower().Contains(searchText));
                         break;
 
                     case "Tên sách":
-                        filteredBooks = _allBooks.Where(s => 
+                        filteredBooks = filteredBooks.Where(s => 
                             s.IDTuaSachNavigation.TenTuaSach.ToLower().Contains(searchText));
                         break;
 
                     case "Thể loại":
-                        filteredBooks = _allBooks.Where(s =>
-                            s.IDTuaSachNavigation.IDTheLoai.Any(x => x.TenTheLoai.ToLower().Contains(searchText)));
+                        filteredBooks = filteredBooks.Where(s =>
+                            s.IDTuaSachNavigation.TUASACH_THELOAI
+                                .Select(ts_tl => ts_tl.IDTheLoaiNavigation.TenTheLoai.ToLower())
+                                .Any(tenTheLoai => tenTheLoai.Contains(searchText)));
                         break;
 
                     case "Tác giả":
-                        filteredBooks = _allBooks.Where(s =>
-                            s.IDTuaSachNavigation.IDTacGia.Any(x => x.MaTacGia.ToLower().Contains(searchText)));
+                        filteredBooks = filteredBooks.Where(s =>
+                            s.IDTuaSachNavigation.TUASACH_TACGIA
+                                .Select(ts_tg => ts_tg.IDTacGiaNavigation.TenTacGia.ToLower())
+                                .Any(tenTacGia => tenTacGia.Contains(searchText)));
                         break;
 
                     default: // "Tất cả"
-                        filteredBooks = _allBooks.Where(s =>
+                        filteredBooks = filteredBooks.Where(s =>
                             s.MaSach.ToLower().Contains(searchText) ||
                             s.IDTuaSachNavigation.TenTuaSach.ToLower().Contains(searchText) ||
-                            s.IDTuaSachNavigation.IDTheLoai.Any(x => x.TenTheLoai.ToLower().Contains(searchText)) ||
-                            s.IDTuaSachNavigation.IDTacGia.Any(x => x.MaTacGia.ToLower().Contains(searchText)));
+                            s.IDTuaSachNavigation.TUASACH_THELOAI
+                                .Select(ts_tl => ts_tl.IDTheLoaiNavigation.TenTheLoai.ToLower())
+                                .Any(tenTheLoai => tenTheLoai.Contains(searchText)) ||
+                            s.IDTuaSachNavigation.TUASACH_TACGIA
+                                .Select(ts_tg => ts_tg.IDTacGiaNavigation.TenTacGia.ToLower())
+                                .Any(tenTacGia => tenTacGia.Contains(searchText)));
                         break;
                 }
             }
 
-            dgAvailableBooks.ItemsSource = filteredBooks.ToList();
+            // Convert filtered books to display format using the concrete type
+            var displayBooks = filteredBooks.Select(s => new BookDisplayItem
+            {
+                Book = s,
+                MaSach = s.MaSach,
+                TuaSach = s.IDTuaSachNavigation.TenTuaSach,
+                DSTheLoai = string.Join(", ", s.IDTuaSachNavigation.TUASACH_THELOAI
+                    .Select(ts_tl => ts_tl.IDTheLoaiNavigation.TenTheLoai))
+            }).ToList();
+
+            dgAvailableBooks.ItemsSource = displayBooks;
         }
 
         private void btnSelectBook_Click(object sender, RoutedEventArgs e)
         {
-            var book = ((Button)sender).DataContext as BookWithGenres;
+            var book = ((Button)sender).DataContext as BookDisplayItem;
             if (book == null) return;
 
-            if (!_selectedBooks.Any(b => b.Book.ID == book.ID))
+            if (!_selectedBooks.Any(b => b.Book.ID == book.Book.ID))
             {
                 var bookWithDate = new BookWithCustomDate 
                 { 
                     Book = book.Book,
-                    CustomBorrowDays = book.IDTuaSachNavigation.HanMuonToiDa
+                    DSTheLoai = string.Join(", ", book.Book.IDTuaSachNavigation.TUASACH_THELOAI
+                    .Select(ts_tl => ts_tl.IDTheLoaiNavigation.TenTheLoai)),
+                    CustomBorrowDays = book.Book.IDTuaSachNavigation.HanMuonToiDa
                 };
                 _selectedBooks.Add(bookWithDate);
             }
@@ -269,6 +233,12 @@ namespace QLTV.UserControls
 
         private async void btnSave_Click(object sender, RoutedEventArgs e)
         {
+            if (cboDocGia.SelectedItem == null)
+            {
+                MessageBox.Show("Vui lòng chọn độc giả", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             if (cboDocGia.SelectedItem == null)
             {
                 MessageBox.Show("Vui lòng chọn độc giả", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -331,7 +301,7 @@ namespace QLTV.UserControls
 
                 // Update CTBCMUONSACH
                 var theLoaiGroups = _selectedBooks
-                    .SelectMany(b => b.Book.IDTuaSachNavigation.IDTheLoai)
+                    .SelectMany(b => b.Book.IDTuaSachNavigation.TUASACH_THELOAI.Select(ts_tl => ts_tl.IDTheLoaiNavigation))
                     .GroupBy(tl => tl.ID)
                     .Select(g => new { TheLoaiId = g.Key, Count = g.Count() });
 
@@ -355,6 +325,8 @@ namespace QLTV.UserControls
                         ctBcMuonSach.SoLuotMuon += group.Count;
                     }
                 }
+
+                await _context.SaveChangesAsync();
 
                 // Update TiLe for all CTBCMUONSACH entries of this report
                 var allCtBcMuonSach = await _context.CTBCMUONSACH

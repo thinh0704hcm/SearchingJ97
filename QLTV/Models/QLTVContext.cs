@@ -56,8 +56,13 @@ public partial class QLTVContext : DbContext
 
     public virtual DbSet<TUASACH> TUASACH { get; set; }
 
+    public virtual DbSet<TUASACH_TACGIA> TUASACH_TACGIA { get; set; }
+
+    public virtual DbSet<TUASACH_THELOAI> TUASACH_THELOAI { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer(ConfigurationManager.ConnectionStrings["QLTV"].ConnectionString);
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer(ConfigurationManager.ConnectionStrings["QLTV2"].ConnectionString);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -251,6 +256,9 @@ public partial class QLTVContext : DbContext
 
         modelBuilder.Entity<SACH>(entity =>
         {
+            entity.Property(e => e.IsAvailable)
+                .IsRequired()
+                .HasDefaultValueSql("((1))");
             entity.Property(e => e.MaSach)
                 .HasMaxLength(6)
                 .IsUnicode(false)
@@ -277,13 +285,14 @@ public partial class QLTVContext : DbContext
                 .IsUnicode(false)
                 .HasComputedColumnSql("('TG'+right('00000'+CONVERT([varchar](5),[ID]),(5)))", true);
             entity.Property(e => e.QuocTich).HasMaxLength(100);
+            entity.Property(e => e.TenTacGia).HasMaxLength(100);
         });
 
         modelBuilder.Entity<TAIKHOAN>(entity =>
         {
-            entity.HasIndex(e => e.Email, "UQ__TAIKHOAN__A9D105344F420D87").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ_Email").IsUnique();
 
-            entity.HasIndex(e => e.TenTaiKhoan, "UQ__TAIKHOAN__B106EAF8B48B3551").IsUnique();
+            entity.HasIndex(e => e.TenTaiKhoan, "UQ_TenTaiKhoan").IsUnique();
 
             entity.Property(e => e.Avatar)
                 .HasMaxLength(500)
@@ -345,38 +354,40 @@ public partial class QLTVContext : DbContext
                 .IsUnicode(false)
                 .HasComputedColumnSql("('TS'+right('00000'+CONVERT([varchar](5),[ID]),(5)))", true);
             entity.Property(e => e.TenTuaSach).HasMaxLength(100);
+        });
 
-            entity.HasMany(d => d.IDTacGia).WithMany(p => p.IDTuaSach)
-                .UsingEntity<Dictionary<string, object>>(
-                    "TUASACH_TACGIA",
-                    r => r.HasOne<TACGIA>().WithMany()
-                        .HasForeignKey("IDTacGia")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_TUASACH_TACGIA_IDTacGia"),
-                    l => l.HasOne<TUASACH>().WithMany()
-                        .HasForeignKey("IDTuaSach")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_TUASACH_TACGIA_IDTuaSach"),
-                    j =>
-                    {
-                        j.HasKey("IDTuaSach", "IDTacGia");
-                    });
+        modelBuilder.Entity<TUASACH_TACGIA>(entity =>
+        {
+            entity.HasKey(e => new { e.IDTuaSach, e.IDTacGia });
 
-            entity.HasMany(d => d.IDTheLoai).WithMany(p => p.IDTuaSach)
-                .UsingEntity<Dictionary<string, object>>(
-                    "TUASACH_THELOAI",
-                    r => r.HasOne<THELOAI>().WithMany()
-                        .HasForeignKey("IDTheLoai")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_TUASACH_THELOAI_IDTheLoai"),
-                    l => l.HasOne<TUASACH>().WithMany()
-                        .HasForeignKey("IDTuaSach")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_TUASACH_THELOAI_IDTuaSach"),
-                    j =>
-                    {
-                        j.HasKey("IDTuaSach", "IDTheLoai");
-                    });
+            entity.Property(e => e.Dummy).HasDefaultValueSql("((0))");
+
+            entity.HasOne(d => d.IDTacGiaNavigation).WithMany(p => p.TUASACH_TACGIA)
+                .HasForeignKey(d => d.IDTacGia)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TUASACH_TACGIA_IDTacGia");
+
+            entity.HasOne(d => d.IDTuaSachNavigation).WithMany(p => p.TUASACH_TACGIA)
+                .HasForeignKey(d => d.IDTuaSach)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TUASACH_TACGIA_IDTuaSach");
+        });
+
+        modelBuilder.Entity<TUASACH_THELOAI>(entity =>
+        {
+            entity.HasKey(e => new { e.IDTuaSach, e.IDTheLoai });
+
+            entity.Property(e => e.Dummy).HasDefaultValueSql("((0))");
+
+            entity.HasOne(d => d.IDTheLoaiNavigation).WithMany(p => p.TUASACH_THELOAI)
+                .HasForeignKey(d => d.IDTheLoai)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TUASACH_THELOAI_IDTheLoai");
+
+            entity.HasOne(d => d.IDTuaSachNavigation).WithMany(p => p.TUASACH_THELOAI)
+                .HasForeignKey(d => d.IDTuaSach)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TUASACH_THELOAI_IDTuaSach");
         });
 
         OnModelCreatingPartial(modelBuilder);

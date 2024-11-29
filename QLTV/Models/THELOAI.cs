@@ -15,5 +15,5 @@ public partial class THELOAI
 
     public virtual ICollection<CTBCMUONSACH> CTBCMUONSACH { get; set; } = new List<CTBCMUONSACH>();
 
-    public virtual ICollection<TUASACH> IDTuaSach { get; set; } = new List<TUASACH>();
+    public virtual ICollection<TUASACH_THELOAI> TUASACH_THELOAI { get; set; } = new List<TUASACH_THELOAI>();
 }

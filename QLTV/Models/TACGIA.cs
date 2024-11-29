@@ -9,11 +9,13 @@ public partial class TACGIA
 
     public string? MaTacGia { get; set; }
 
+    public string TenTacGia { get; set; } = null!;
+
     public int NamSinh { get; set; }
 
     public string QuocTich { get; set; } = null!;
 
     public bool IsDeleted { get; set; }
 
-    public virtual ICollection<TUASACH> IDTuaSach { get; set; } = new List<TUASACH>();
+    public virtual ICollection<TUASACH_TACGIA> TUASACH_TACGIA { get; set; } = new List<TUASACH_TACGIA>();
 }

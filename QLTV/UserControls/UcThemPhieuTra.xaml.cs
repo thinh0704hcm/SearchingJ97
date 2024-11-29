@@ -37,6 +37,8 @@ namespace QLTV.UserControls
                     .Include(p => p.CTPHIEUMUON)
                         .ThenInclude(ct => ct.IDSachNavigation)
                             .ThenInclude(s => s.IDTuaSachNavigation)
+                                .ThenInclude(ts => ts.TUASACH_THELOAI)
+                                    .ThenInclude(ts_tl => ts_tl.IDTheLoaiNavigation)
                     .Include(p => p.CTPHIEUTRA)
                     .Where(p => !p.IsDeleted && p.IsPending)
                     .ToListAsync();
