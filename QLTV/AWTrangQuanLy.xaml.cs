@@ -8,7 +8,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using QLTV.UserControls;
 
 namespace QLTV
 {
@@ -26,16 +25,6 @@ namespace QLTV
         {
             AUFnQuanLySach qls = new AUFnQuanLySach();
             ADMainContent.Content = qls;
-        }
-
-        private void btnFnBaoCaoThongKe_Click(object sender, RoutedEventArgs e)
-        {
-            ADMainContent.Content = new UcBCMuonTra();
-        }
-
-        private void btnFnQuanLyMuonTra_Click(object sender, RoutedEventArgs e)
-        {
-            ADMainContent.Content = new UcQLMuonTra();
         }
     }
 }

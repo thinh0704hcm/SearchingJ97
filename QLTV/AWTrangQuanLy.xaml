@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:QLTV"
         mc:Ignorable="d"
-        Title="MainWindow" Height="650" Width="1000"
-        WindowStartupLocation="CenterScreen">
+        Title="TRANG QUẢN LÝ" Height="750" Width="1250"
+        WindowStartupLocation="CenterScreen"
+        Background="GhostWhite">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -23,7 +24,7 @@
         </StackPanel> 
         
         <!--Thanh Menu ben trai-->
-        <DockPanel Grid.Row="1" Grid.Column="0" Background="DodgerBlue" Margin="0, 5, 0, 0">
+        <DockPanel Grid.Row="1" Grid.Column="0" Margin="0, 5, 0, 0" Background="#FF03A9FF">
             <TextBlock Text="Quản Lý Thư Viện" DockPanel.Dock="Top" Foreground="White" HorizontalAlignment="Stretch" 
                        FontSize="14" FontWeight="Bold" Margin="5, 25, 0, 10" TextAlignment="Center"/>
             <TextBlock Text="Admin" DockPanel.Dock="Top" Foreground="White"
@@ -35,16 +36,12 @@
             <StackPanel DockPanel.Dock="Top">
                 <Button x:Name="btnFnQuanLySach" Content="Quản Lý Sách" Background="DodgerBlue" 
                         Foreground="White" Click="btnFnQuanLySach_Click"/>
-                <Button x:Name="btnFnQuanLyMuonTra" Content="Quản Lý Mượn Trả" Background="DodgerBlue" 
-                        Foreground="White" Click="btnFnQuanLyMuonTra_Click"/>
-                <Button x:Name="btnFnBaoCaoThongKe" Content="Báo Cáo Thống Kê" Background="DodgerBlue" 
-                        Foreground="White" Click="btnFnBaoCaoThongKe_Click"/>
             </StackPanel>
         </DockPanel>
         
         <!--Main Content-->
         <Grid Grid.Row="1" Grid.Column="1" Margin="5, 5, 0, 0">
-            <Frame x:Name="ADMainContent"/>
+            <Frame x:Name="ADMainContent" NavigationUIVisibility="Hidden"/>
         </Grid>
     </Grid>
 </Window>
