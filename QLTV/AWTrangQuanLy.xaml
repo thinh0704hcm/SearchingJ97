@@ -36,6 +36,10 @@
             <StackPanel DockPanel.Dock="Top">
                 <Button x:Name="btnFnQuanLySach" Content="Quản Lý Sách" Background="DodgerBlue" 
                         Foreground="White" Click="btnFnQuanLySach_Click"/>
+                <Button x:Name="btnFnQuanLyMuonTra" Content="Quản Lý Mượn Trả" Background="DodgerBlue" 
+                        Foreground="White" Click="btnFnQuanLyMuonTra_Click"/>
+                <Button x:Name="btnFnBaoCaoThongKe" Content="Báo Cáo Thống Kê" Background="DodgerBlue" 
+                        Foreground="White" Click="btnFnBaoCaoThongKe_Click"/>
             </StackPanel>
         </DockPanel>
         

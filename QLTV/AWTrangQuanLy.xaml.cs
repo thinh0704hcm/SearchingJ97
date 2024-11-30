@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using QLTV.UserControls;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -25,6 +26,16 @@ namespace QLTV
         {
             AUFnQuanLySach qls = new AUFnQuanLySach();
             ADMainContent.Content = qls;
+        }
+
+        private void btnFnBaoCaoThongKe_Click(object sender, RoutedEventArgs e)
+        {
+            ADMainContent.Content = new UcBCMuonTra();
+        }
+
+        private void btnFnQuanLyMuonTra_Click(object sender, RoutedEventArgs e)
+        {
+            ADMainContent.Content = new UcQLMuonTra();
         }
     }
 }
