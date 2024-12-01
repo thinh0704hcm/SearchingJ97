@@ -8,7 +8,7 @@
              mc:Ignorable="d" 
              d:DesignHeight="720" d:DesignWidth="1080">
     <Grid>
-        <TabControl>
+        <TabControl HorizontalContentAlignment="Left">
             <!-- Borrowing Tab -->
             <TabItem Header="Mượn sách">
                 <Grid Margin="10">
@@ -25,7 +25,8 @@
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10" Grid.ColumnSpan="2">
                         <TextBox x:Name="txtSearchBorrow" Width="200" Margin="0,0,10,0" 
                                  Style="{StaticResource TextBoxWithPlaceholder}"
-                                 Tag="Tìm kiếm phiếu mượn"/>
+                                 Tag="Tìm kiếm phiếu mượn"
+                                 TextChanged="txtSearchBorrow_TextChanged"/>
                         <Button x:Name="btnAddBorrow" Content="Thêm phiếu mượn" Click="btnAddBorrow_Click"/>
                     </StackPanel>
 
@@ -33,9 +34,9 @@
                     <DataGrid x:Name="dgBorrowings" Grid.Row="1" AutoGenerateColumns="False" 
                               IsReadOnly="True" SelectionMode="Single" Grid.ColumnSpan="2">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Mã phiếu" Binding="{Binding MaPhieuMuon}"/>
-                            <DataGridTextColumn Header="Độc giả" Binding="{Binding IDDocGiaNavigation.IDTaiKhoanNavigation.TenTaiKhoan}"/>
-                            <DataGridTextColumn Header="Ngày mượn" Binding="{Binding NgayMuon, StringFormat=dd/MM/yyyy}"/>
+                            <materialDesign:DataGridTextColumn Header="Mã phiếu" Binding="{Binding phieuMuon.MaPhieuMuon}"/>
+                            <materialDesign:DataGridTextColumn Header="Độc giả" Binding="{Binding phieuMuon.IDDocGiaNavigation.IDTaiKhoanNavigation.TenTaiKhoan}"/>
+                            <materialDesign:DataGridTextColumn Header="Ngày mượn" Binding="{Binding phieuMuon.NgayMuon, StringFormat=dd/MM/yyyy}"/>
                             <DataGridTemplateColumn Header="Thao tác">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -47,6 +48,29 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
+                        <DataGrid.RowDetailsTemplate>
+                            <DataTemplate>
+                                <DataGrid ItemsSource="{Binding ctPhieuMuon}" AutoGenerateColumns="False" IsReadOnly="True" Margin="30,0,0,0">
+                                    <DataGrid.Columns>
+                                        <materialDesign:DataGridTextColumn Header="Mã sách" Binding="{Binding IDSachNavigation.MaSach}"/>
+                                        <materialDesign:DataGridTextColumn Header="Tên sách" Binding="{Binding IDSachNavigation.IDTuaSachNavigation.TenTuaSach}"/>
+                                        <materialDesign:DataGridTextColumn Header="Hạn trả" Binding="{Binding HanTra, StringFormat=dd/MM/yyyy}"/>
+                                        <materialDesign:DataGridTextColumn Header="Tình trạng" Binding="{Binding TinhTrangMuon}"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DataTemplate>
+                        </DataGrid.RowDetailsTemplate>
+
+                        <DataGrid.Resources>
+                            <Style TargetType="DataGridRow">
+                                <Setter Property="DetailsVisibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsExpanded, RelativeSource={RelativeSource Self}}" Value="True">
+                                        <Setter Property="DetailsVisibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGrid.Resources>
                     </DataGrid>
                 </Grid>
             </TabItem>
@@ -71,8 +95,8 @@
                     <DataGrid x:Name="dgReturns" Grid.Row="1" AutoGenerateColumns="False" 
                               IsReadOnly="True" SelectionMode="Single">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Mã phiếu" Binding="{Binding MaPhieuTra}"/>
-                            <DataGridTextColumn Header="Ngày trả" Binding="{Binding NgayTra, StringFormat=dd/MM/yyyy}"/>
+                            <DataGridTextColumn Header="Mã phiếu" Binding="{Binding phieuTra.MaPhieuTra}"/>
+                            <DataGridTextColumn Header="Ngày trả" Binding="{Binding phieuTra.NgayTra, StringFormat=dd/MM/yyyy}"/>
                             <DataGridTemplateColumn Header="Thao tác">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
@@ -84,6 +108,20 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
+                        <DataGrid.RowDetailsTemplate>
+                            <DataTemplate>
+                                <DataGrid ItemsSource="{Binding ctPhieuTra}" AutoGenerateColumns="False" IsReadOnly="True" Margin="30,0,0,0">
+                                    <DataGrid.Columns>
+                                        <materialDesign:DataGridTextColumn Header="Mã sách" Binding="{Binding IDSachNavigation.MaSach}"/>
+                                        <materialDesign:DataGridTextColumn Header="Tên sách" Binding="{Binding IDSachNavigation.IDTuaSachNavigation.TenTuaSach}"/>
+                                        <materialDesign:DataGridTextColumn Header="Số ngày mượn" Binding="{Binding SoNgayMuon}"/>
+                                        <materialDesign:DataGridTextColumn Header="Tiền phạt" Binding="{Binding TienPhat, StringFormat=N0}"/>
+                                        <materialDesign:DataGridTextColumn Header="Tình trạng" Binding="{Binding TinhTrangTra}"/>
+                                        <materialDesign:DataGridTextColumn Header="Ghi chú" Binding="{Binding GhiChu}"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DataTemplate>
+                        </DataGrid.RowDetailsTemplate>
                     </DataGrid>
                 </Grid>
             </TabItem>

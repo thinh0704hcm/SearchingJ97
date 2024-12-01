@@ -47,6 +47,7 @@ namespace QLTV.UserControls
                 {
                     _bookItem = value;
                     OnPropertyChanged(nameof(_bookItem));
+                    OnPropertyChanged(nameof(BookDisplayItem.DSTacGia));
                     OnPropertyChanged(nameof(BookDisplayItem.DSTheLoai));
                 }
             }
@@ -54,6 +55,11 @@ namespace QLTV.UserControls
             public string DSTheLoai
             {
                 get => _bookItem.DSTheLoai;
+            }
+
+            public string DSTacGia
+            {
+                get => _bookItem.DSTacGia;
             }
 
             public int CustomBorrowDays
@@ -110,6 +116,7 @@ namespace QLTV.UserControls
             public SACH Book { get; set; }
             public string MaSach { get; set; }
             public string TuaSach { get; set; }
+            public string DSTacGia { get; set; }
             public string DSTheLoai { get; set; }
         }
 
@@ -153,6 +160,8 @@ namespace QLTV.UserControls
                     Book = s,
                     MaSach = s.MaSach,
                     TuaSach = s.IDTuaSachNavigation.TenTuaSach,
+                    DSTacGia = string.Join(", ", s.IDTuaSachNavigation.TUASACH_TACGIA
+                        .Select(ts_tg => ts_tg.IDTacGiaNavigation.TenTacGia)),
                     DSTheLoai = string.Join(", ", s.IDTuaSachNavigation.TUASACH_THELOAI
                         .Select(ts_tl => ts_tl.IDTheLoaiNavigation.TenTheLoai))
                 }).ToList());

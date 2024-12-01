@@ -5,14 +5,89 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.EntityFrameworkCore;
+using System.Windows.Input;
+using System.ComponentModel;
+using Microsoft.IdentityModel.Tokens;
 
 namespace QLTV.UserControls
 {
+
+    public class BorrowViewModel : INotifyPropertyChanged
+    {
+        private ObservableCollection<CTPHIEUMUON> _ctPhieuMuon;
+        public ObservableCollection<CTPHIEUMUON> ctPhieuMuon
+        {
+            get => _ctPhieuMuon;
+            set
+            {
+                _ctPhieuMuon = value;
+                OnPropertyChanged(nameof(ctPhieuMuon));
+            }
+        }
+
+        public PHIEUMUON phieuMuon { get; set; }
+        private bool _isExpanded;
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set
+            {
+                if (_isExpanded != value)
+                {
+                    _isExpanded = value;
+                    OnPropertyChanged(nameof(IsExpanded));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    public class ReturnViewModel : INotifyPropertyChanged
+    {
+        private ObservableCollection<CTPHIEUTRA> _ctPhieuTra;
+        public ObservableCollection<CTPHIEUTRA> ctPhieuTra
+        {
+            get => _ctPhieuTra;
+            set
+            {
+                _ctPhieuTra = value;
+                OnPropertyChanged(nameof(ctPhieuTra));
+            }
+        }
+
+        public PHIEUTRA phieuTra { get; set; }
+        private bool _isExpanded;
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set
+            {
+                if (_isExpanded != value)
+                {
+                    _isExpanded = value;
+                    OnPropertyChanged(nameof(IsExpanded));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+
     public partial class UcQLMuonTra : UserControl
     {
         private readonly QLTVContext _context;
-        private ObservableCollection<PHIEUMUON> _borrowings;
-        private ObservableCollection<PHIEUTRA> _returns;
+        private ObservableCollection<BorrowViewModel> _borrowings;
+        private ObservableCollection<ReturnViewModel> _returns;
 
         public UcQLMuonTra()
         {
@@ -31,18 +106,34 @@ namespace QLTV.UserControls
                         .ThenInclude(d => d.IDTaiKhoanNavigation)
                     .Include(p => p.CTPHIEUMUON)
                         .ThenInclude(ct => ct.IDSachNavigation)
+                            .ThenInclude(s => s.IDTuaSachNavigation)
                     .Where(p => !p.IsDeleted)
                     .ToListAsync();
-                _borrowings = new ObservableCollection<PHIEUMUON>(borrowings);
+                _borrowings = new ObservableCollection<BorrowViewModel>(
+                    borrowings.Select(b => new BorrowViewModel
+                    {
+                        phieuMuon = b,
+                        ctPhieuMuon = new ObservableCollection<CTPHIEUMUON>(b.CTPHIEUMUON),
+                        IsExpanded = false
+                    })
+                );
                 dgBorrowings.ItemsSource = _borrowings;
 
                 // Load returns with related data, excluding soft-deleted records
                 var returns = await _context.PHIEUTRA
                     .Include(p => p.CTPHIEUTRA)
                         .ThenInclude(ct => ct.IDSachNavigation)
+                            .ThenInclude(s => s.IDTuaSachNavigation)
                     .Where(p => !p.IsDeleted)
                     .ToListAsync();
-                _returns = new ObservableCollection<PHIEUTRA>(returns);
+                _returns = new ObservableCollection<ReturnViewModel>(
+                    returns.Select(r => new ReturnViewModel
+                    {
+                        phieuTra = r,
+                        ctPhieuTra = new ObservableCollection<CTPHIEUTRA>(r.CTPHIEUTRA),
+                        IsExpanded = false
+                    })
+                );
                 dgReturns.ItemsSource = _returns;
             }
             catch (Exception ex)
@@ -71,25 +162,19 @@ namespace QLTV.UserControls
 
         private void btnViewBorrowDetail_Click(object sender, RoutedEventArgs e)
         {
-            var phieuMuon = ((FrameworkElement)sender).DataContext as PHIEUMUON;
-            if (phieuMuon == null) return;
-
-            var window = new Window
+            var button = sender as Button;
+            var row = DataGridRow.GetRowContainingElement(button);
+            if (row?.DataContext is BorrowViewModel borrowing)
             {
-                Title = $"Chi tiết phiếu mượn: {phieuMuon.MaPhieuMuon}",
-                Content = new UcCTPhieuMuon(phieuMuon),
-                Width = 800,
-                Height = 600,
-                WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                ResizeMode = ResizeMode.CanResizeWithGrip
-            };
-            window.ShowDialog();
+                borrowing.IsExpanded = !borrowing.IsExpanded;
+                row.DetailsVisibility = borrowing.IsExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         private async void btnDeleteBorrow_Click(object sender, RoutedEventArgs e)
         {
-            var phieuMuon = ((FrameworkElement)sender).DataContext as PHIEUMUON;
-            if (phieuMuon == null) return;
+            var borrowViewModel = ((FrameworkElement)sender).DataContext as BorrowViewModel;
+            if (borrowViewModel == null) return;
 
             if (MessageBox.Show("Bạn có chắc muốn xóa phiếu mượn này?", "Xác nhận", 
                 MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
@@ -97,13 +182,13 @@ namespace QLTV.UserControls
                 try
                 {
                     // Soft delete the borrowing record
-                    phieuMuon.IsDeleted = true;
+                    borrowViewModel.phieuMuon.IsDeleted = true;
 
-                    // Also mark related CTPHIEUMUON records as deleted if they have IsDeleted property
-                    foreach (var ctPhieuMuon in phieuMuon.CTPHIEUMUON)
+                    // Also mark related CTborrowViewModel records as deleted if they have IsDeleted property
+                    foreach (var ctborrowViewModel in borrowViewModel.ctPhieuMuon)
                     {
                         // Update the book's availability
-                        var sach = ctPhieuMuon.IDSachNavigation;
+                        var sach = ctborrowViewModel.IDSachNavigation;
                         if (sach != null)
                         {
                             sach.IsAvailable = true;
@@ -111,7 +196,7 @@ namespace QLTV.UserControls
                     }
 
                     await _context.SaveChangesAsync();
-                    _borrowings.Remove(phieuMuon);
+                    _borrowings.Remove(borrowViewModel);
                 }
                 catch (Exception ex)
                 {
@@ -141,25 +226,19 @@ namespace QLTV.UserControls
 
         private void btnViewReturnDetail_Click(object sender, RoutedEventArgs e)
         {
-            var phieuTra = ((FrameworkElement)sender).DataContext as PHIEUTRA;
-            if (phieuTra == null) return;
-
-            var window = new Window
+            var button = sender as Button;
+            var row = DataGridRow.GetRowContainingElement(button);
+            if (row?.DataContext is ReturnViewModel returning)
             {
-                Title = $"Chi tiết phiếu trả: {phieuTra.MaPhieuTra}",
-                Content = new UcCTPhieuTra(phieuTra),
-                Width = 800,
-                Height = 600,
-                WindowStartupLocation = WindowStartupLocation.CenterScreen,
-                ResizeMode = ResizeMode.NoResize
-            };
-            window.ShowDialog();
+                returning.IsExpanded = !returning.IsExpanded;
+                row.DetailsVisibility = returning.IsExpanded ? Visibility.Visible : Visibility.Collapsed;
+            }
         }
 
         private async void btnDeleteReturn_Click(object sender, RoutedEventArgs e)
         {
-            var phieuTra = ((FrameworkElement)sender).DataContext as PHIEUTRA;
-            if (phieuTra == null) return;
+            var returnViewModel = ((FrameworkElement)sender).DataContext as ReturnViewModel;
+            if (returnViewModel == null) return;
 
             if (MessageBox.Show("Bạn có chắc muốn xóa phiếu trả này?", "Xác nhận", 
                 MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
@@ -167,10 +246,10 @@ namespace QLTV.UserControls
                 try
                 {
                     // Soft delete the return record
-                    phieuTra.IsDeleted = true;
+                    returnViewModel.phieuTra.IsDeleted = true;
 
                     // Handle related CTPHIEUTRA records
-                    foreach (var ctPhieuTra in phieuTra.CTPHIEUTRA)
+                    foreach (var ctPhieuTra in returnViewModel.phieuTra.CTPHIEUTRA)
                     {
                         // Revert the book's status if needed
                         var sach = ctPhieuTra.IDSachNavigation;
@@ -181,7 +260,7 @@ namespace QLTV.UserControls
                     }
 
                     await _context.SaveChangesAsync();
-                    _returns.Remove(phieuTra);
+                    _returns.Remove(returnViewModel);
                 }
                 catch (Exception ex)
                 {
@@ -189,6 +268,25 @@ namespace QLTV.UserControls
                         MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
+        }
+
+        private void txtSearchBorrow_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_borrowings == null) return;
+
+            var searchText = txtSearchBorrow.Text.Trim().ToLower();
+
+            IEnumerable<BorrowViewModel> filteredBorrows = _borrowings;
+
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                filteredBorrows = filteredBorrows.Where(s =>
+                    s.phieuMuon.IDDocGiaNavigation.IDTaiKhoanNavigation.TenTaiKhoan.Contains(searchText) ||
+                    s.phieuMuon.MaPhieuMuon.ToLower().Contains(searchText) ||
+                    s.phieuMuon.NgayMuon.ToShortDateString().Contains(searchText));
+            }
+
+            dgBorrowings.ItemsSource = filteredBorrows;
         }
     }
 }

@@ -73,9 +73,10 @@
                       SelectionMode="Extended"
                       IsReadOnly="True">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Mã sách" Binding="{Binding MaSach}" Width="*"/>
+                    <DataGridTextColumn Header="Mã sách" Binding="{Binding MaSach}" Width="2*"/>
                     <DataGridTextColumn Header="Tên sách" Binding="{Binding TuaSach}" Width="5*"/>
-                    <DataGridTextColumn Header="Thể loại" Binding="{Binding DSTheLoai}" Width="3*"/>
+                    <DataGridTextColumn Header="Tác giả" Binding="{Binding DSTacGia}" Width="4*"/>
+                    <DataGridTextColumn Header="Thể loại" Binding="{Binding DSTheLoai}" Width="4*"/>
                     <DataGridTemplateColumn Width="2*">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -97,23 +98,27 @@
                   AutoGenerateColumns="False" 
                   Margin="0,0,0,10">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Mã sách" Binding="{Binding MaSach}" IsReadOnly="True" Width="*"/>
+                <DataGridTextColumn Header="Mã sách" Binding="{Binding MaSach}" IsReadOnly="True" Width="2*"/>
                 <DataGridTextColumn Header="Tên sách" 
-                                  Binding="{Binding IDTuaSachNavigation.TenTuaSach}" 
-                                  IsReadOnly="True"
-                                  Width="4*"/>
+                                    Binding="{Binding IDTuaSachNavigation.TenTuaSach}" 
+                                    IsReadOnly="True"
+                                    Width="5*"/>
+                <DataGridTextColumn Header="Tác giả" 
+                                    Binding="{Binding DSTacGia}" 
+                                    Width="4*"
+                                    IsReadOnly="True"/>
                 <DataGridTextColumn Header="Thể loại" 
-                                  Binding="{Binding DSTheLoai}" 
-                                  IsReadOnly="True"
-                                  Width="2*"/>
+                                    Binding="{Binding DSTheLoai}" 
+                                    IsReadOnly="True"
+                                    Width="3*"/>
                 <DataGridTextColumn Header="Số ngày mượn" 
-                                  Binding="{Binding CustomBorrowDays}"
-                                  Width="2*"/>
+                                    Binding="{Binding CustomBorrowDays}"
+                                    Width="2*"/>
                 <DataGridTextColumn Header="Hạn trả" 
-                                  Binding="{Binding CustomReturnDate, StringFormat=dd/MM/yyyy}" 
-                                  IsReadOnly="True"
-                                  Width="2*"/>
-                <DataGridTemplateColumn Width="*">
+                                    Binding="{Binding CustomReturnDate, StringFormat=dd/MM/yyyy}" 
+                                    IsReadOnly="True"
+                                    Width="2*"/>
+                <DataGridTemplateColumn Width="2*">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <Button Content="Xóa" Click="btnRemoveBook_Click"/>
