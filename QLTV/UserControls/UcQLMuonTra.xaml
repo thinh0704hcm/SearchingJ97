@@ -87,7 +87,8 @@
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
                         <TextBox x:Name="txtSearchReturn" Width="200" Margin="0,0,10,0" 
                                  Style="{StaticResource TextBoxWithPlaceholder}"
-                                 Tag="Tìm kiếm phiếu trả..."/>
+                                 Tag="Tìm kiếm phiếu trả..."
+                                 TextChanged="txtSearchReturn_TextChanged"/>
                         <Button x:Name="btnAddReturn" Content="Thêm phiếu trả" Click="btnAddReturn_Click"/>
                     </StackPanel>
 
@@ -96,6 +97,7 @@
                               IsReadOnly="True" SelectionMode="Single">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Mã phiếu" Binding="{Binding phieuTra.MaPhieuTra}"/>
+                            <DataGridTextColumn Header="Độc giả" Binding="{Binding DocGia}"/>
                             <DataGridTextColumn Header="Ngày trả" Binding="{Binding phieuTra.NgayTra, StringFormat=dd/MM/yyyy}"/>
                             <DataGridTemplateColumn Header="Thao tác">
                                 <DataGridTemplateColumn.CellTemplate>

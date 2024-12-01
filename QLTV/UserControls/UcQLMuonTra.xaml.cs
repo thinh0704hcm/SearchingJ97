@@ -60,6 +60,8 @@ namespace QLTV.UserControls
             }
         }
 
+        public string DocGia => _ctPhieuTra.First().IDPhieuMuonNavigation.IDDocGiaNavigation.IDTaiKhoanNavigation.TenTaiKhoan;
+
         public PHIEUTRA phieuTra { get; set; }
         private bool _isExpanded;
         public bool IsExpanded
@@ -287,6 +289,26 @@ namespace QLTV.UserControls
             }
 
             dgBorrowings.ItemsSource = filteredBorrows;
+        }
+
+        private void txtSearchReturn_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (_returns == null) return;
+
+            var searchText = txtSearchReturn.Text.Trim().ToLower();
+
+            IEnumerable<ReturnViewModel> filteredReturns = _returns;
+
+            if (!string.IsNullOrEmpty(searchText))
+            {
+                filteredReturns = filteredReturns.Where(s =>
+                    s.phieuTra.CTPHIEUTRA.Any(ct => ct.IDPhieuMuonNavigation.IDDocGiaNavigation.IDTaiKhoanNavigation.TenTaiKhoan.Contains(searchText)) ||
+                    s.phieuTra.MaPhieuTra.ToLower().Contains(searchText) ||
+                    s.phieuTra.CTPHIEUTRA.Any(ct => ct.IDPhieuMuonNavigation.MaPhieuMuon.ToLower().Contains(searchText)) ||
+                    s.phieuTra.NgayTra.ToShortDateString().Contains(searchText));
+            }
+
+            dgReturns.ItemsSource = filteredReturns;
         }
     }
 }
